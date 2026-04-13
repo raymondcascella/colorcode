@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tests</title>
+  <style>
+    body { font-family: monospace; padding: 24px; background: #111; color: #eee; }
+    h1 { margin-bottom: 16px; }
+    .suite { margin-bottom: 16px; }
+    .suite h2 { font-size: 1rem; margin-bottom: 6px; color: #aaa; }
+    .pass { color: #4caf50; }
+    .fail { color: #e94560; white-space: pre-wrap; }
+    .summary { margin-top: 16px; font-size: 1.1rem; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Test Results</h1>
+  <div id="output"></div>
+  <script type="module">
+    import { runSuite } from './helpers.js';
+    import { tests as bagTests } from './bag.test.js';
+    import { tests as boardTests } from './board.test.js';
+    import { tests as rulesTests } from './rules.test.js';
+    import { tests as scoringTests } from './scoring.test.js';
+    import { tests as gameTests } from './game.test.js';
+
+    const suites = [
+      runSuite('bag', bagTests),
+      runSuite('board', boardTests),
+      runSuite('rules', rulesTests),
+      runSuite('scoring', scoringTests),
+      runSuite('game', gameTests),
+    ];
+
+    const out = document.getElementById('output');
+    let totalPass = 0, totalFail = 0;
+    for (const { suiteName, results } of suites) {
+      const div = document.createElement('div');
+      div.className = 'suite';
+      div.innerHTML = `<h2>${suiteName}</h2>` + results.map(r => {
+        if (r.pass) { totalPass++; return `<div class="pass">✓ ${r.name}</div>`; }
+        totalFail++;
+        return `<div class="fail">✗ ${r.name}\n  ${r.error}</div>`;
+      }).join('');
+      out.appendChild(div);
+    }
+    const summary = document.createElement('div');
+    summary.className = 'summary';
+    summary.textContent = `${totalPass} passed, ${totalFail} failed`;
+    summary.style.color = totalFail ? '#e94560' : '#4caf50';
+    out.appendChild(summary);
+  </script>
+</body>
+</html>
