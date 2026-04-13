@@ -1,4 +1,4 @@
-export const TILE_SIZE = 60;
+export const TILE_SIZE = 40;
 export const TILE_GAP = 4;
 export const CELL = TILE_SIZE + TILE_GAP;
 

@@ -254,7 +254,7 @@ function updateSidebar() {
   bagCountEl.textContent = 'Bag: ' + game.bag.length;
   scoresEl.innerHTML = game.players.map((p, i) =>
     '<div class="score-entry ' + (i === game.currentPlayerIndex ? 'current' : '') + '">' +
-    '<span>' + p.name + '</span><span>' + p.score + '</span></div>'
+    '<span class="score-name">' + p.name + '</span><span class="score-val">' + p.score + '</span></div>'
   ).join('');
 }
 

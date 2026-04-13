@@ -4,60 +4,498 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Color Code</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
+    :root {
+      --bg:        #0e0e0e;
+      --surface:   #161616;
+      --border:    #2a2a2a;
+      --text:      #f0ece4;
+      --muted:     #666;
+      --accent:    #e8ff47;
+      --danger:    #ff3b3b;
+      --play-bg:   #e8ff47;
+      --play-fg:   #0e0e0e;
+      --swap-bg:   #7c3aed;
+      --pass-bg:   #2a2a2a;
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { display: flex; height: 100vh; background: #1a1a2e; color: #eee; font-family: sans-serif; }
-    #sidebar { width: 200px; min-width: 200px; padding: 16px; background: #16213e; display: flex; flex-direction: column; gap: 12px; }
-    #game-area { flex: 1; display: flex; flex-direction: column; }
-    #canvas-wrap { flex: 1; overflow: hidden; position: relative; }
-    canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+
+    body {
+      display: flex;
+      height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      width: 180px;
+      min-width: 180px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 16px 16px;
+      gap: 0;
+    }
+
+    #sidebar-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 4px;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 20px;
+    }
+
+    #sidebar-logo span {
+      display: block;
+      font-size: 0.55rem;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 3px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    #current-player {
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      color: var(--accent);
+      text-transform: uppercase;
+      min-height: 1.2em;
+      margin-bottom: 4px;
+    }
+
+    #bag-count {
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: var(--border);
+      margin-bottom: 16px;
+    }
+
+    #scores {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .score-entry {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--muted);
+      padding: 4px 0;
+      border-bottom: 1px solid #1e1e1e;
+    }
+
+    .score-entry.current {
+      color: var(--text);
+    }
+
+    .score-entry.current .score-name::before {
+      content: '▶ ';
+      color: var(--accent);
+    }
+
+    .score-val { color: var(--accent); font-weight: 500; }
+    .score-entry.current .score-val { color: var(--accent); }
+
+    #btn-help {
+      margin-top: 16px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 0;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 1px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    #btn-help:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Game area ── */
+    #game-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    #canvas-wrap {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      background: var(--bg);
+    }
+
+    /* subtle dot grid bg */
+    #canvas-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, #2a2a2a 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      opacity: 0.4;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+      position: relative;
+    }
+
     canvas.dragging { cursor: grabbing; }
-    #hand-area { height: 120px; background: #0f3460; display: flex; align-items: center; padding: 12px; gap: 8px; }
-    #actions { display: flex; gap: 8px; margin-left: auto; }
-    button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
-    #btn-play { background: #e94560; color: #fff; }
-    #btn-swap { background: #533483; color: #fff; }
-    #btn-pass { background: #444; color: #ccc; }
-    button:disabled { opacity: 0.4; cursor: not-allowed; }
-    #start-screen { position: fixed; inset: 0; z-index: 100; background: #1a1a2e; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
-    #start-screen h1 { font-size: 2.5rem; letter-spacing: 2px; }
-    #start-screen label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
-    #start-screen input, #start-screen select { padding: 6px 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #eee; }
-    #start-screen #player-names { display: flex; flex-direction: column; gap: 8px; }
-    #start-screen #btn-start { background: #e94560; color: #fff; font-size: 1rem; padding: 10px 32px; margin-top: 8px; }
-    #end-screen { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
-    #end-screen h2 { font-size: 2rem; }
-    #end-screen #final-scores { list-style: none; font-size: 1.2rem; display: flex; flex-direction: column; gap: 8px; }
-    #end-screen #btn-restart { background: #e94560; color: #fff; font-size: 1rem; padding: 10px 32px; }
-    .score-entry { display: flex; justify-content: space-between; gap: 24px; }
-    .score-entry.current { font-weight: bold; color: #e94560; }
-    #btn-help { background: none; border: 1px solid #444; color: #aaa; padding: 6px 12px; font-size: 13px; margin-top: auto; }
-    #btn-help:hover { background: #1a1a2e; color: #eee; }
-    #help-panel { display: none; position: fixed; top: 0; right: 0; bottom: 0; width: 320px; z-index: 200; background: #16213e; border-left: 1px solid #333; padding: 24px; overflow-y: auto; flex-direction: column; gap: 14px; }
+
+    /* ── Hand area ── */
+    #hand-area {
+      height: 68px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+    }
+
+    #hand-label {
+      font-size: 0.6rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      user-select: none;
+    }
+
+    #hand-tiles {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex: 1;
+    }
+    #hand-tiles canvas {
+      width: 48px;
+      height: 48px;
+    }
+
+    #actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-left: auto;
+    }
+
+    button {
+      padding: 7px 18px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    button:active:not(:disabled) { transform: scale(0.97); }
+
+    #btn-play  { background: var(--play-bg); color: var(--play-fg); font-weight: 500; }
+    #btn-swap  { background: var(--swap-bg); color: #fff; }
+    #btn-pass  { background: var(--pass-bg); color: var(--muted); }
+    button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* ── Start screen ── */
+    #start-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+    }
+
+    #start-screen::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, #2a2a2a 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .start-inner {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+      width: 320px;
+    }
+
+    .start-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 5rem;
+      letter-spacing: 10px;
+      color: var(--text);
+      line-height: 1;
+      text-align: center;
+    }
+
+    .start-title em {
+      display: block;
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .start-subtitle {
+      font-size: 0.65rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: -22px;
+    }
+
+    .start-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .start-fields label {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .start-fields input,
+    .start-fields select {
+      padding: 8px 12px;
+      border-radius: 2px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .start-fields input:focus,
+    .start-fields select:focus { border-color: var(--accent); }
+
+    #player-names {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    #btn-start {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
+      color: var(--bg);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 4px;
+      border-radius: 2px;
+    }
+
+    #btn-start:hover { opacity: 0.88; }
+
+    /* color swatches decoration */
+    .color-bar {
+      display: flex;
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .color-bar span {
+      flex: 1;
+    }
+
+    /* ── End screen ── */
+    #end-screen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 150;
+      background: rgba(14,14,14,0.92);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      backdrop-filter: blur(4px);
+    }
+
+    #end-screen h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.5rem;
+      letter-spacing: 8px;
+      color: var(--accent);
+    }
+
+    #final-scores {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #final-scores li {
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+      color: var(--text);
+      padding: 8px 24px;
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      gap: 40px;
+    }
+
+    #final-scores li:first-child {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    #btn-restart {
+      background: var(--accent);
+      color: var(--bg);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      letter-spacing: 4px;
+      padding: 10px 36px;
+      border-radius: 2px;
+    }
+
+    /* ── Help panel ── */
+    #help-panel {
+      display: none;
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 340px;
+      z-index: 200;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      padding: 24px 20px;
+      overflow-y: auto;
+      flex-direction: column;
+      gap: 16px;
+    }
+
     #help-panel.open { display: flex; }
-    #help-panel h3 { font-size: 1.1rem; letter-spacing: 1px; color: #e94560; }
-    #help-panel h4 { font-size: 0.9rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-top: 6px; }
-    #help-panel p, #help-panel li { font-size: 0.88rem; line-height: 1.6; color: #ccc; }
-    #help-panel ul { padding-left: 16px; display: flex; flex-direction: column; gap: 4px; }
-    #btn-close-help { background: none; border: 1px solid #444; color: #aaa; padding: 4px 10px; font-size: 13px; align-self: flex-end; }
+
+    #help-panel h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: 5px;
+      color: var(--accent);
+    }
+
+    #help-panel h4 {
+      font-size: 0.6rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: -8px;
+    }
+
+    #help-panel p, #help-panel li {
+      font-size: 0.78rem;
+      line-height: 1.7;
+      color: #aaa;
+    }
+
+    #help-panel ul {
+      padding-left: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    #btn-close-help {
+      align-self: flex-end;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 4px 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 1px;
+      cursor: pointer;
+    }
+
+    #btn-close-help:hover { border-color: var(--danger); color: var(--danger); }
   </style>
 </head>
 <body>
+
   <!-- Start screen -->
   <div id="start-screen">
-    <h1>COLOR CODE</h1>
-    <label>
-      Number of players
-      <select id="player-count">
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4" selected>4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-      </select>
-    </label>
-    <div id="player-names"></div>
-    <button id="btn-start">Start Game</button>
+    <div class="start-inner">
+      <div class="color-bar">
+        <span style="background:#e94560"></span>
+        <span style="background:#ff8c42"></span>
+        <span style="background:#ffd700"></span>
+        <span style="background:#4caf50"></span>
+        <span style="background:#4fc3f7"></span>
+        <span style="background:#ce93d8"></span>
+      </div>
+      <div>
+        <div class="start-title">COLOR<em>CODE</em></div>
+        <div class="start-subtitle">Tile placement strategy</div>
+      </div>
+      <div class="start-fields">
+        <label>
+          Players
+          <select id="player-count">
+            <option value="2">2 players</option>
+            <option value="3">3 players</option>
+            <option value="4" selected>4 players</option>
+            <option value="5">5 players</option>
+            <option value="6">6 players</option>
+          </select>
+        </label>
+        <div id="player-names"></div>
+      </div>
+      <button id="btn-start">Start Game</button>
+      <div class="color-bar">
+        <span style="background:#ce93d8"></span>
+        <span style="background:#4fc3f7"></span>
+        <span style="background:#4caf50"></span>
+        <span style="background:#ffd700"></span>
+        <span style="background:#ff8c42"></span>
+        <span style="background:#e94560"></span>
+      </div>
+    </div>
   </div>
 
   <!-- End screen -->
@@ -67,67 +505,72 @@
     <button id="btn-restart">Play Again</button>
   </div>
 
-  <!-- Game -->
+  <!-- Sidebar -->
   <div id="sidebar">
-    <h2 style="font-size:1.1rem;letter-spacing:1px;">COLOR CODE</h2>
-    <div id="current-player" style="font-size:0.9rem;color:#aaa;">—</div>
-    <div id="bag-count" style="font-size:0.85rem;color:#888;">Bag: —</div>
-    <hr style="border-color:#333;" />
-    <div id="scores" style="display:flex;flex-direction:column;gap:6px;font-size:0.9rem;"></div>
+    <div id="sidebar-logo">
+      COLOR<br>CODE
+      <span>tile strategy</span>
+    </div>
+    <div id="current-player"></div>
+    <div id="bag-count"></div>
+    <div class="sidebar-divider"></div>
+    <div id="scores"></div>
     <button id="btn-help">How to Play</button>
   </div>
 
-  <!-- Help panel -->
-  <div id="help-panel">
-    <button id="btn-close-help">✕ Close</button>
-    <h3>HOW TO PLAY</h3>
-
-    <h4>Goal</h4>
-    <p>Score the most points by placing tiles that share a color or shape with their neighbors.</p>
-
-    <h4>Tiles</h4>
-    <p>There are 6 shapes and 6 colors. Each unique combination appears 3 times in the bag. You hold 6 tiles at a time.</p>
-
-    <h4>Placing Tiles</h4>
-    <ul>
-      <li>Click a tile in your hand to select it.</li>
-      <li>Click a highlighted cell on the board to place it.</li>
-      <li>All tiles played in one turn must be in the same row or column.</li>
-      <li>Each line on the board shares exactly one attribute — either all the same color (different shapes) or all the same shape (different colors).</li>
-      <li>No duplicate tiles in a line.</li>
-      <li>Placed tiles must connect to the existing board (except the very first play).</li>
-    </ul>
-
-    <h4>Scoring</h4>
-    <ul>
-      <li>Each tile scores points equal to the length of every line it contributes to.</li>
-      <li>Completing a line of 6 tiles earns a 6-point bonus.</li>
-      <li>Emptying your hand when the bag is empty earns +6 points.</li>
-    </ul>
-
-    <h4>Actions</h4>
-    <ul>
-      <li><strong>Play</strong> — commit your staged tiles and end your turn.</li>
-      <li><strong>Swap</strong> — select tiles from your hand to exchange with the bag (skips your turn).</li>
-      <li><strong>Pass</strong> — skip your turn. If all players pass in a row, the game ends.</li>
-    </ul>
-
-    <h4>End Game</h4>
-    <p>The game ends when the bag is empty and a player empties their hand, or when all players pass consecutively. Highest score wins.</p>
-  </div>
-
+  <!-- Game -->
   <div id="game-area">
     <div id="canvas-wrap">
       <canvas id="board-canvas"></canvas>
     </div>
     <div id="hand-area">
-      <div id="hand-tiles" style="display:flex;gap:8px;"></div>
+      <div id="hand-label">Hand</div>
+      <div id="hand-tiles"></div>
       <div id="actions">
         <button id="btn-play" disabled>Play</button>
-        <button id="btn-swap" disabled>Swap</button>
+        <button id="btn-swap">Swap</button>
         <button id="btn-pass">Pass</button>
       </div>
     </div>
+  </div>
+
+  <!-- Help panel -->
+  <div id="help-panel">
+    <button id="btn-close-help">✕ close</button>
+    <h3>How to Play</h3>
+
+    <h4>Goal</h4>
+    <p>Score the most points by placing tiles that share a color or shape with their neighbors.</p>
+
+    <h4>Tiles</h4>
+    <p>6 shapes × 6 colors. Each unique tile appears 3 times in the bag. You hold 6 tiles at a time.</p>
+
+    <h4>Placing Tiles</h4>
+    <ul>
+      <li>Click a tile in your hand to select it.</li>
+      <li>Valid board cells will highlight — click one to stage the tile.</li>
+      <li>All tiles played in one turn must share the same row or column.</li>
+      <li>Each line shares exactly one attribute: all same color (different shapes) or all same shape (different colors).</li>
+      <li>No duplicate tiles in a line.</li>
+      <li>Tiles must connect to the existing board (except the first play).</li>
+    </ul>
+
+    <h4>Scoring</h4>
+    <ul>
+      <li>Each tile scores the length of every line it contributes to.</li>
+      <li>Completing a line of 6 earns a 6-point bonus.</li>
+      <li>Emptying your hand when the bag is empty: +6 points.</li>
+    </ul>
+
+    <h4>Actions</h4>
+    <ul>
+      <li><strong>Play</strong> — commit staged tiles and end your turn.</li>
+      <li><strong>Swap</strong> — select hand tiles to exchange with the bag (skips turn).</li>
+      <li><strong>Pass</strong> — skip your turn. All players passing ends the game.</li>
+    </ul>
+
+    <h4>End Game</h4>
+    <p>Game ends when the bag empties and a player empties their hand, or all players pass consecutively. Highest score wins.</p>
   </div>
 
   <script type="module" src="src/main.js"></script>
