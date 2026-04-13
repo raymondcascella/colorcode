@@ -19,7 +19,7 @@
     #btn-swap { background: #533483; color: #fff; }
     #btn-pass { background: #444; color: #ccc; }
     button:disabled { opacity: 0.4; cursor: not-allowed; }
-    #start-screen { position: fixed; inset: 0; background: #1a1a2e; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+    #start-screen { position: fixed; inset: 0; z-index: 100; background: #1a1a2e; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
     #start-screen h1 { font-size: 2.5rem; letter-spacing: 2px; }
     #start-screen label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
     #start-screen input, #start-screen select { padding: 6px 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #eee; }
@@ -31,6 +31,15 @@
     #end-screen #btn-restart { background: #e94560; color: #fff; font-size: 1rem; padding: 10px 32px; }
     .score-entry { display: flex; justify-content: space-between; gap: 24px; }
     .score-entry.current { font-weight: bold; color: #e94560; }
+    #btn-help { background: none; border: 1px solid #444; color: #aaa; padding: 6px 12px; font-size: 13px; margin-top: auto; }
+    #btn-help:hover { background: #1a1a2e; color: #eee; }
+    #help-panel { display: none; position: fixed; top: 0; right: 0; bottom: 0; width: 320px; z-index: 200; background: #16213e; border-left: 1px solid #333; padding: 24px; overflow-y: auto; flex-direction: column; gap: 14px; }
+    #help-panel.open { display: flex; }
+    #help-panel h3 { font-size: 1.1rem; letter-spacing: 1px; color: #e94560; }
+    #help-panel h4 { font-size: 0.9rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-top: 6px; }
+    #help-panel p, #help-panel li { font-size: 0.88rem; line-height: 1.6; color: #ccc; }
+    #help-panel ul { padding-left: 16px; display: flex; flex-direction: column; gap: 4px; }
+    #btn-close-help { background: none; border: 1px solid #444; color: #aaa; padding: 4px 10px; font-size: 13px; align-self: flex-end; }
   </style>
 </head>
 <body>
@@ -65,6 +74,46 @@
     <div id="bag-count" style="font-size:0.85rem;color:#888;">Bag: —</div>
     <hr style="border-color:#333;" />
     <div id="scores" style="display:flex;flex-direction:column;gap:6px;font-size:0.9rem;"></div>
+    <button id="btn-help">How to Play</button>
+  </div>
+
+  <!-- Help panel -->
+  <div id="help-panel">
+    <button id="btn-close-help">✕ Close</button>
+    <h3>HOW TO PLAY</h3>
+
+    <h4>Goal</h4>
+    <p>Score the most points by placing tiles that share a color or shape with their neighbors.</p>
+
+    <h4>Tiles</h4>
+    <p>There are 6 shapes and 6 colors. Each unique combination appears 3 times in the bag. You hold 6 tiles at a time.</p>
+
+    <h4>Placing Tiles</h4>
+    <ul>
+      <li>Click a tile in your hand to select it.</li>
+      <li>Click a highlighted cell on the board to place it.</li>
+      <li>All tiles played in one turn must be in the same row or column.</li>
+      <li>Each line on the board shares exactly one attribute — either all the same color (different shapes) or all the same shape (different colors).</li>
+      <li>No duplicate tiles in a line.</li>
+      <li>Placed tiles must connect to the existing board (except the very first play).</li>
+    </ul>
+
+    <h4>Scoring</h4>
+    <ul>
+      <li>Each tile scores points equal to the length of every line it contributes to.</li>
+      <li>Completing a line of 6 tiles earns a 6-point bonus.</li>
+      <li>Emptying your hand when the bag is empty earns +6 points.</li>
+    </ul>
+
+    <h4>Actions</h4>
+    <ul>
+      <li><strong>Play</strong> — commit your staged tiles and end your turn.</li>
+      <li><strong>Swap</strong> — select tiles from your hand to exchange with the bag (skips your turn).</li>
+      <li><strong>Pass</strong> — skip your turn. If all players pass in a row, the game ends.</li>
+    </ul>
+
+    <h4>End Game</h4>
+    <p>The game ends when the bag is empty and a player empties their hand, or when all players pass consecutively. Highest score wins.</p>
   </div>
 
   <div id="game-area">
@@ -82,5 +131,13 @@
   </div>
 
   <script type="module" src="src/main.js"></script>
+  <script>
+    document.getElementById('btn-help').addEventListener('click', () => {
+      document.getElementById('help-panel').classList.add('open');
+    });
+    document.getElementById('btn-close-help').addEventListener('click', () => {
+      document.getElementById('help-panel').classList.remove('open');
+    });
+  </script>
 </body>
 </html>
