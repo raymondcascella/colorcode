@@ -1,9 +1,9 @@
-# Tile Game (Qwirkle Clone) — Design Spec
+# Color Code — Design Spec
 **Date:** 2026-04-12
 
 ## Overview
 
-A browser-based, local multiplayer Qwirkle clone for 2–6 players. Vanilla JavaScript with ES modules, hosted on GitHub Pages. No build tools required.
+A browser-based, local multiplayer tile placement game for 2–6 players. Vanilla JavaScript with ES modules, hosted on GitHub Pages. No build tools required.
 
 ## Platform & Stack
 
@@ -21,7 +21,7 @@ A browser-based, local multiplayer Qwirkle clone for 2–6 players. Vanilla Java
 | `src/bag.js` | 108-tile draw bag (6 shapes × 6 colors × 3 copies), shuffle, draw |
 | `src/rules.js` | Placement validation — a tile must match color OR shape with neighbors; a line can't mix both attributes |
 | `src/board.js` | Sparse grid as `Map<"x,y", Tile>`, place/get/neighbors |
-| `src/scoring.js` | Count tiles in each line through placed tile; 6-point Qwirkle bonus for completing a line of 6 |
+| `src/scoring.js` | Count tiles in each line through placed tile; 6-point Color Code bonus for completing a line of 6 |
 | `src/game.js` | Turn state machine — whose turn, staged tiles, pass/swap logic, end-game detection |
 | `src/ui.js` | Canvas rendering, pan/zoom, click-to-place interaction, player hands, scores |
 
@@ -77,7 +77,7 @@ Map<string, Tile>  // key: "x,y"
 ## Scoring
 
 - Each tile placed scores points equal to the length of every line it contributes to (horizontal + vertical, minimum 1 per line)
-- Completing a line of 6 (Qwirkle) awards a 6-point bonus on top
+- Completing a line of 6 (Color Code) awards a 6-point bonus on top
 - Player who empties hand when bag is empty: +6 bonus
 
 ## File Layout
