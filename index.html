@@ -486,9 +486,13 @@
       letter-spacing: normal;
     }
 
+    body.kids-mode #canvas-wrap {
+      background: var(--surface);
+    }
+
     body.kids-mode #canvas-wrap::before {
-      background-image: radial-gradient(circle, #c8d4f0 1px, transparent 1px);
-      opacity: 0.6;
+      background-image: radial-gradient(circle, #8a9bc0 1px, transparent 1px);
+      opacity: 0.5;
     }
 
     body.kids-mode #start-screen::before {
@@ -535,6 +539,48 @@
       40%, 80% { transform: translateX(6px); }
     }
     .shake { animation: shake 0.4s ease; }
+
+    /* ── Mobile layout ── */
+    @media (max-width: 640px) {
+      body { flex-direction: column; }
+
+      #sidebar {
+        width: 100%;
+        min-width: unset;
+        flex-direction: row;
+        align-items: center;
+        padding: 8px 12px;
+        gap: 10px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      #sidebar-logo { display: none; }
+      .sidebar-divider { display: none; }
+      #btn-help { margin-top: 0; padding: 5px 10px; font-size: 0.6rem; }
+      #current-player { margin-bottom: 0; white-space: nowrap; font-size: 0.65rem; }
+      #bag-count { margin-bottom: 0; white-space: nowrap; font-size: 0.62rem; }
+      #scores {
+        flex-direction: row;
+        flex: 1;
+        flex-wrap: wrap;
+        gap: 4px 10px;
+        overflow: hidden;
+      }
+      .score-entry { border-bottom: none; padding: 0 2px; font-size: 0.68rem; }
+
+      #hand-area {
+        height: auto;
+        min-height: 60px;
+        padding: 8px 10px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      #hand-label { display: none; }
+      #actions { flex-direction: row; margin-left: 0; gap: 5px; }
+      #actions button { padding: 8px 14px; font-size: 0.68rem; }
+
+      .start-inner { width: min(320px, calc(100vw - 40px)); }
+    }
   </style>
 </head>
 <body>

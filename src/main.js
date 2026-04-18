@@ -115,7 +115,7 @@ function render() {
   ctx.scale(camera.zoom, camera.zoom);
 
   const gridR = 20;
-  ctx.fillStyle = game.kidsMode ? '#c8d4f066' : '#ffffff10';
+  ctx.fillStyle = game.kidsMode ? '#8a9bc080' : '#ffffff10';
   for (let gx = -gridR; gx <= gridR; gx++) {
     for (let gy = -gridR; gy <= gridR; gy++) {
       ctx.beginPath();
@@ -247,6 +247,68 @@ canvas.addEventListener('wheel', (e) => {
   e.preventDefault();
   camera.zoom = Math.max(0.3, Math.min(3, camera.zoom * (e.deltaY < 0 ? 1.1 : 0.9)));
   render();
+}, { passive: false });
+
+// --- Touch (pan / pinch-zoom / tap) ---
+let touch = { active: false, startX: 0, startY: 0, camX: 0, camY: 0, moved: false };
+let pinch = { active: false, startDist: 0, startZoom: 1 };
+
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  if (e.touches.length === 2) {
+    touch.active = false;
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    pinch = { active: true, startDist: Math.hypot(dx, dy), startZoom: camera.zoom };
+  } else if (e.touches.length === 1) {
+    pinch.active = false;
+    const t = e.touches[0];
+    touch = { active: true, startX: t.clientX, startY: t.clientY, camX: camera.x, camY: camera.y, moved: false };
+    canvas.classList.add('dragging');
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  if (pinch.active && e.touches.length === 2) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    const dist = Math.hypot(dx, dy);
+    camera.zoom = Math.max(0.3, Math.min(3, pinch.startZoom * dist / pinch.startDist));
+    render();
+  } else if (touch.active && e.touches.length === 1) {
+    const t = e.touches[0];
+    const dx = t.clientX - touch.startX;
+    const dy = t.clientY - touch.startY;
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) touch.moved = true;
+    camera.x = touch.camX + dx;
+    camera.y = touch.camY + dy;
+    render();
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  canvas.classList.remove('dragging');
+  if (!touch.moved && touch.active && e.changedTouches.length === 1 && game && selectedHandTile) {
+    const t = e.changedTouches[0];
+    const { bx, by } = canvasToBoard(t.clientX, t.clientY);
+    const stagedIdx = game.staged.findIndex(p => p.x === bx && p.y === by);
+    if (stagedIdx !== -1) {
+      unstage(game, bx, by);
+      selectedHandTile = null;
+      renderHand(); render();
+    } else if (getTile(game.board, bx, by) === null) {
+      const test = validatePlacement(game.board, [...game.staged, { x: bx, y: by, tile: selectedHandTile }]);
+      if (test.valid) {
+        stagePlace(game, bx, by, selectedHandTile);
+        selectedHandTile = null;
+        renderHand(); render();
+      }
+    }
+  }
+  touch.active = false;
+  pinch.active = false;
 }, { passive: false });
 
 // --- Score flash and auto-skip ---
