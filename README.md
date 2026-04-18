@@ -2,7 +2,7 @@
 
 A browser-based, local multiplayer tile placement game for 2–6 players. No installation required — plays directly in the browser, pass-and-play on a single device.
 
-**[Play now →](https://raymondcascella.github.io/tilegame)**
+**[Play now →](https://raymondcascella.github.io/colorcode)**
 
 ---
 
