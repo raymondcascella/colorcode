@@ -1,4 +1,4 @@
-import { createGame, stagePlace, unstage, commitTurn, swapTiles, passTurn } from '../src/game.js';
+import { createGame, stagePlace, unstage, commitTurn, swapTiles, passTurn, autoSkipTurn } from '../src/game.js';
 import { assert, assertEqual } from './helpers.js';
 
 const names = ['Alice', 'Bob'];
@@ -82,5 +82,36 @@ export const tests = {
     const game = createGame(['Alice', 'Bob'], false);
     assertEqual(game.bag.length, 96, 'classic bag should have 96 tiles after dealing');
     assert(game.kidsMode === false, 'game.kidsMode should be false');
+  },
+  'autoSkipTurn does nothing in classic mode': () => {
+    const game = createGame(['Alice', 'Bob'], false);
+    const before = game.currentPlayerIndex;
+    const skipped = autoSkipTurn(game);
+    assertEqual(skipped, false, 'should not skip in classic mode');
+    assertEqual(game.currentPlayerIndex, before, 'player should not change');
+  },
+  'autoSkipTurn does nothing when valid placement exists': () => {
+    const game = createGame(['Alice', 'Bob'], true);
+    const before = game.currentPlayerIndex;
+    const skipped = autoSkipTurn(game);
+    assertEqual(skipped, false, 'should not skip when moves exist');
+    assertEqual(game.currentPlayerIndex, before, 'player should not change');
+  },
+  'autoSkipTurn advances player when no valid placement': () => {
+    const game = createGame(['Alice', 'Bob'], true);
+    const cp = game.players[game.currentPlayerIndex];
+    cp.hand = [];
+    const before = game.currentPlayerIndex;
+    const skipped = autoSkipTurn(game);
+    assertEqual(skipped, true, 'should skip when hand is empty');
+    assertEqual(game.currentPlayerIndex, (before + 1) % 2, 'should advance to next player');
+    assertEqual(game.consecutivePasses, 1, 'consecutivePasses should increment');
+  },
+  'autoSkipTurn sets game.over when all players skipped': () => {
+    const game = createGame(['Alice', 'Bob'], true);
+    for (const p of game.players) p.hand = [];
+    autoSkipTurn(game);
+    autoSkipTurn(game);
+    assertEqual(game.over, true, 'game should end when all players auto-skipped');
   },
 };

@@ -1,6 +1,6 @@
-import { createGame, stagePlace, unstage, commitTurn, swapTiles, passTurn } from './game.js';
+import { createGame, stagePlace, unstage, commitTurn, swapTiles, passTurn, autoSkipTurn } from './game.js';
 import { validatePlacement } from './rules.js';
-import { drawTile, TILE_SIZE, CELL } from './ui.js';
+import { drawTile, TILE_SIZE, CELL, KIDS_TILE_SIZE, KIDS_CELL } from './ui.js';
 import { getTile } from './board.js';
 
 // --- DOM refs ---
@@ -20,6 +20,8 @@ const currentPlayerEl = document.getElementById('current-player');
 const bagCountEl = document.getElementById('bag-count');
 const scoresEl = document.getElementById('scores');
 const finalScoresEl = document.getElementById('final-scores');
+const btnClassic = document.getElementById('btn-classic');
+const btnKids = document.getElementById('btn-kids');
 
 // --- State ---
 let game = null;
@@ -28,6 +30,7 @@ let swapSelection = [];
 let swapMode = false;
 let camera = { x: 0, y: 0, zoom: 1 };
 let drag = { active: false, startX: 0, startY: 0, camX: 0, camY: 0, moved: false };
+let kidsMode = false;
 
 // --- Start screen ---
 function updateNameInputs() {
@@ -42,6 +45,19 @@ function updateNameInputs() {
 playerCountSel.addEventListener('change', updateNameInputs);
 updateNameInputs();
 
+btnClassic.addEventListener('click', () => {
+  kidsMode = false;
+  btnClassic.classList.add('active');
+  btnKids.classList.remove('active');
+  document.body.classList.remove('kids-mode');
+});
+btnKids.addEventListener('click', () => {
+  kidsMode = true;
+  btnKids.classList.add('active');
+  btnClassic.classList.remove('active');
+  document.body.classList.add('kids-mode');
+});
+
 btnStart.addEventListener('click', () => {
   const count = parseInt(playerCountSel.value);
   const names = Array.from({ length: count }, (_, i) => {
@@ -54,17 +70,26 @@ btnStart.addEventListener('click', () => {
 btnRestart.addEventListener('click', () => {
   endScreen.style.display = 'none';
   startScreen.style.display = 'flex';
+  btnSwap.style.display = '';
+  btnPass.style.display = '';
+  kidsMode = false;
+  btnClassic.classList.add('active');
+  btnKids.classList.remove('active');
+  document.body.classList.remove('kids-mode');
   updateNameInputs();
 });
 
 // --- Game start ---
 function startGame(names) {
-  game = createGame(names);
+  game = createGame(names, kidsMode);
+  document.body.classList.toggle('kids-mode', kidsMode);
   startScreen.style.display = 'none';
   camera = { x: 0, y: 0, zoom: 1 };
   selectedHandTile = null;
   swapSelection = [];
   swapMode = false;
+  btnSwap.style.display = kidsMode ? 'none' : '';
+  btnPass.style.display = kidsMode ? 'none' : '';
   resizeCanvas();
   render();
   updateSidebar();
@@ -82,6 +107,8 @@ window.addEventListener('resize', () => { resizeCanvas(); render(); });
 // --- Render board ---
 function render() {
   if (!game) return;
+  const activeCell = game.kidsMode ? KIDS_CELL : CELL;
+  const activeTileSize = game.kidsMode ? KIDS_TILE_SIZE : TILE_SIZE;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
   ctx.translate(canvas.width / 2 + camera.x, canvas.height / 2 + camera.y);
@@ -92,18 +119,18 @@ function render() {
   for (let gx = -gridR; gx <= gridR; gx++) {
     for (let gy = -gridR; gy <= gridR; gy++) {
       ctx.beginPath();
-      ctx.arc(gx * CELL + CELL / 2, gy * CELL + CELL / 2, 2, 0, Math.PI * 2);
+      ctx.arc(gx * activeCell + activeCell / 2, gy * activeCell + activeCell / 2, 2, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 
   for (const [key, tile] of game.board) {
     const [bx, by] = key.split(',').map(Number);
-    drawTile(ctx, tile, bx * CELL, by * CELL);
+    drawTile(ctx, tile, bx * activeCell, by * activeCell, activeTileSize, 1, game.kidsMode);
   }
 
   for (const { x, y, tile } of game.staged) {
-    drawTile(ctx, tile, x * CELL, y * CELL, TILE_SIZE, 0.6);
+    drawTile(ctx, tile, x * activeCell, y * activeCell, activeTileSize, 0.6, game.kidsMode);
   }
 
   if (selectedHandTile) {
@@ -117,7 +144,7 @@ function render() {
           const test = validatePlacement(game.board,
             [...game.staged, { x: gx, y: gy, tile: selectedHandTile }]);
           if (test.valid) {
-            ctx.strokeRect(gx * CELL + 2, gy * CELL + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+            ctx.strokeRect(gx * activeCell + 2, gy * activeCell + 2, activeTileSize - 4, activeTileSize - 4);
           }
         }
       }
@@ -130,28 +157,33 @@ function render() {
 // --- Render hand ---
 function renderHand() {
   if (!game) return;
+  const activeTileSize = game.kidsMode ? KIDS_TILE_SIZE : TILE_SIZE;
   handTiles.innerHTML = '';
   const cp = game.players[game.currentPlayerIndex];
   for (const tile of cp.hand) {
     const cvs = document.createElement('canvas');
-    cvs.width = TILE_SIZE;
-    cvs.height = TILE_SIZE;
+    cvs.width = activeTileSize;
+    cvs.height = activeTileSize;
+    cvs.style.width = activeTileSize + 'px';
+    cvs.style.height = activeTileSize + 'px';
     cvs.style.cursor = 'pointer';
     cvs.style.borderRadius = '8px';
-    drawTile(cvs.getContext('2d'), tile, 0, 0, TILE_SIZE, 1);
+    drawTile(cvs.getContext('2d'), tile, 0, 0, activeTileSize, 1, game.kidsMode);
     const selected = swapMode ? swapSelection.includes(tile) : tile === selectedHandTile;
     if (selected) {
       const c = cvs.getContext('2d');
       c.strokeStyle = '#fff';
       c.lineWidth = 3;
-      c.strokeRect(2, 2, TILE_SIZE - 4, TILE_SIZE - 4);
+      c.strokeRect(2, 2, activeTileSize - 4, activeTileSize - 4);
     }
     cvs.addEventListener('click', () => onHandTileClick(tile));
     handTiles.appendChild(cvs);
   }
   btnPlay.disabled = game.staged.length === 0;
-  btnSwap.disabled = swapMode && swapSelection.length === 0;
-  btnSwap.textContent = swapMode ? ('Swap (' + swapSelection.length + ')') : 'Swap';
+  if (!game.kidsMode) {
+    btnSwap.disabled = swapMode && swapSelection.length === 0;
+    btnSwap.textContent = swapMode ? ('Swap (' + swapSelection.length + ')') : 'Swap';
+  }
 }
 
 function onHandTileClick(tile) {
@@ -187,10 +219,11 @@ canvas.addEventListener('click', (e) => {
 });
 
 function canvasToBoard(clientX, clientY) {
+  const activeCell = game.kidsMode ? KIDS_CELL : CELL;
   const rect = canvas.getBoundingClientRect();
   const cx = (clientX - rect.left - canvas.width / 2 - camera.x) / camera.zoom;
   const cy = (clientY - rect.top - canvas.height / 2 - camera.y) / camera.zoom;
-  return { bx: Math.floor(cx / CELL), by: Math.floor(cy / CELL) };
+  return { bx: Math.floor(cx / activeCell), by: Math.floor(cy / activeCell) };
 }
 
 // --- Pan ---
@@ -216,13 +249,38 @@ canvas.addEventListener('wheel', (e) => {
   render();
 }, { passive: false });
 
+// --- Score flash and auto-skip ---
+function flashScores() {
+  const entries = scoresEl.querySelectorAll('.score-val');
+  for (const el of entries) {
+    el.classList.remove('score-pop');
+    void el.offsetWidth;
+    el.classList.add('score-pop');
+  }
+  setTimeout(() => entries.forEach(el => el.classList.remove('score-pop')), 400);
+}
+
+function runAutoSkips() {
+  while (!game.over && autoSkipTurn(game)) {
+    handTiles.classList.remove('shake');
+    void handTiles.offsetWidth;
+    handTiles.classList.add('shake');
+    setTimeout(() => handTiles.classList.remove('shake'), 450);
+    updateSidebar();
+  }
+}
+
 // --- Action buttons ---
 btnPlay.addEventListener('click', () => {
   if (game.staged.length === 0) return;
   commitTurn(game);
+  flashScores();
   selectedHandTile = null; swapSelection = []; swapMode = false;
   if (game.over) { showEndScreen(); return; }
   renderHand(); render(); updateSidebar();
+  runAutoSkips();
+  if (game.over) { showEndScreen(); return; }
+  renderHand(); updateSidebar();
 });
 
 btnSwap.addEventListener('click', () => {
@@ -250,8 +308,13 @@ btnPass.addEventListener('click', () => {
 function updateSidebar() {
   if (!game) return;
   const cp = game.players[game.currentPlayerIndex];
-  currentPlayerEl.textContent = cp.name + "'s turn";
-  bagCountEl.textContent = 'Bag: ' + game.bag.length;
+  if (game.kidsMode) {
+    currentPlayerEl.textContent = '▶ ' + cp.name;
+    bagCountEl.textContent = '🎒 ' + game.bag.length;
+  } else {
+    currentPlayerEl.textContent = cp.name + "'s turn";
+    bagCountEl.textContent = 'Bag: ' + game.bag.length;
+  }
   scoresEl.innerHTML = game.players.map((p, i) =>
     '<div class="score-entry ' + (i === game.currentPlayerIndex ? 'current' : '') + '">' +
     '<span class="score-name">' + p.name + '</span><span class="score-val">' + p.score + '</span></div>'

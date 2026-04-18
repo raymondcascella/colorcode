@@ -2,19 +2,22 @@ export const TILE_SIZE = 40;
 export const TILE_GAP = 4;
 export const CELL = TILE_SIZE + TILE_GAP;
 
+export const KIDS_TILE_SIZE = 56;
+export const KIDS_CELL = KIDS_TILE_SIZE + TILE_GAP;
+
 export const COLOR_MAP = {
   red: '#e94560', orange: '#ff8c42', yellow: '#ffd700',
   green: '#4caf50', blue: '#4fc3f7', purple: '#ce93d8',
 };
 
-/** Draw a single tile at canvas pixel (px, py). */
-export function drawTile(ctx, tile, px, py, size = TILE_SIZE, alpha = 1) {
+/** Draw a single tile at canvas pixel (px, py). Pass kidsStyle=true for bright theme. */
+export function drawTile(ctx, tile, px, py, size = TILE_SIZE, alpha = 1, kidsStyle = false) {
   ctx.save();
   ctx.globalAlpha = alpha;
-  ctx.fillStyle = '#2a2a4a';
+  ctx.fillStyle = kidsStyle ? '#ffffff' : '#2a2a4a';
   ctx.strokeStyle = COLOR_MAP[tile.color];
-  ctx.lineWidth = 3;
-  roundRect(ctx, px + 2, py + 2, size - 4, size - 4, 8);
+  ctx.lineWidth = kidsStyle ? 5 : 3;
+  roundRect(ctx, px + 2, py + 2, size - 4, size - 4, kidsStyle ? 14 : 8);
   ctx.fill();
   ctx.stroke();
   ctx.fillStyle = COLOR_MAP[tile.color];

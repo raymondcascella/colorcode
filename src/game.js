@@ -1,6 +1,7 @@
 import { createBag, drawTiles } from './bag.js';
 import { createBoard, placeTile } from './board.js';
 import { scorePlacements } from './scoring.js';
+import { hasAnyValidPlacement } from './rules.js';
 
 /**
  * Create a new game state.
@@ -99,4 +100,18 @@ export function passTurn(game) {
   if (game.consecutivePasses >= game.players.length) {
     game.over = true;
   }
+}
+
+/**
+ * In kids mode only: if the current player has no valid placement, auto-skip their turn.
+ * Returns true if a skip occurred, false otherwise.
+ */
+export function autoSkipTurn(game) {
+  if (!game.kidsMode) return false;
+  const cp = game.players[game.currentPlayerIndex];
+  if (hasAnyValidPlacement(game.board, cp.hand)) return false;
+  game.consecutivePasses++;
+  game.currentPlayerIndex = (game.currentPlayerIndex + 1) % game.players.length;
+  if (game.consecutivePasses >= game.players.length) game.over = true;
+  return true;
 }
