@@ -6,7 +6,7 @@
   <title>Color Code</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Fredoka+One&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg:        #0e0e0e;
@@ -455,6 +455,87 @@
 
     #btn-close-help:hover { border-color: var(--danger); color: var(--danger); }
   </style>
+
+  <style>
+    /* ── Kids Mode theme ── */
+    body.kids-mode {
+      --bg:        #fffdf5;
+      --surface:   #f0f4ff;
+      --border:    #c8d4f0;
+      --text:      #2a2a4a;
+      --muted:     #7a88b0;
+      --accent:    #ff6b35;
+      --play-bg:   #ff6b35;
+      --play-fg:   #ffffff;
+      --pass-bg:   #e0e8ff;
+      font-family: 'Fredoka One', sans-serif;
+    }
+
+    body.kids-mode #sidebar-logo,
+    body.kids-mode .start-title,
+    body.kids-mode .start-subtitle,
+    body.kids-mode button,
+    body.kids-mode label,
+    body.kids-mode #end-screen h2,
+    body.kids-mode #btn-start,
+    body.kids-mode #current-player,
+    body.kids-mode #bag-count,
+    body.kids-mode .score-entry,
+    body.kids-mode #hand-label {
+      font-family: 'Fredoka One', sans-serif;
+      letter-spacing: normal;
+    }
+
+    body.kids-mode #canvas-wrap::before {
+      background-image: radial-gradient(circle, #c8d4f0 1px, transparent 1px);
+      opacity: 0.6;
+    }
+
+    body.kids-mode #start-screen::before {
+      background-image: radial-gradient(circle, #c8d4f0 1px, transparent 1px);
+    }
+
+    /* Mode toggle on start screen */
+    #mode-toggle {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .mode-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Score flash animation */
+    @keyframes score-pop {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.35); color: var(--accent); }
+      100% { transform: scale(1); }
+    }
+    .score-pop { animation: score-pop 0.35s ease; }
+
+    /* Auto-skip shake */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .shake { animation: shake 0.4s ease; }
+  </style>
 </head>
 <body>
 
@@ -474,6 +555,10 @@
         <div class="start-subtitle">Tile placement strategy</div>
       </div>
       <div class="start-fields">
+        <div id="mode-toggle">
+          <button type="button" id="btn-classic" class="mode-btn active">Classic</button>
+          <button type="button" id="btn-kids" class="mode-btn">🎨 Kids</button>
+        </div>
         <label>
           Players
           <select id="player-count">
