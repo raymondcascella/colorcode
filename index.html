@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Color Code</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -27,6 +27,7 @@
     body {
       display: flex;
       height: 100vh;
+      height: 100dvh;
       background: var(--bg);
       color: var(--text);
       font-family: 'DM Mono', monospace;
@@ -172,6 +173,7 @@
       display: flex;
       align-items: center;
       padding: 0 16px;
+      padding-bottom: max(0px, env(safe-area-inset-bottom));
       gap: 12px;
     }
 
