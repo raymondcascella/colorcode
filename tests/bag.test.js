@@ -1,4 +1,4 @@
-import { createBag, drawTiles, SHAPES, COLORS } from '../src/bag.js';
+import { createBag, drawTiles, SHAPES, COLORS, KIDS_SHAPES, KIDS_COLORS } from '../src/bag.js';
 import { assert, assertEqual } from './helpers.js';
 
 export const tests = {
@@ -33,5 +33,29 @@ export const tests = {
   },
   'COLORS has 6 entries': () => {
     assertEqual(COLORS.length, 6, 'should have 6 colors');
+  },
+  'kids bag has 48 tiles': () => {
+    const bag = createBag(true);
+    assertEqual(bag.length, 48, 'kids bag should have 48 tiles');
+  },
+  'kids bag contains only kids colors and shapes': () => {
+    const bag = createBag(true);
+    for (const tile of bag) {
+      assert(KIDS_COLORS.includes(tile.color), `unexpected color: ${tile.color}`);
+      assert(KIDS_SHAPES.includes(tile.shape), `unexpected shape: ${tile.shape}`);
+    }
+  },
+  'kids bag contains all kids combinations 3x': () => {
+    const bag = createBag(true);
+    for (const shape of KIDS_SHAPES) {
+      for (const color of KIDS_COLORS) {
+        const count = bag.filter(t => t.shape === shape && t.color === color).length;
+        assertEqual(count, 3, `kids ${shape}/${color} should appear 3 times`);
+      }
+    }
+  },
+  'classic bag unaffected by kids flag': () => {
+    const bag = createBag(false);
+    assertEqual(bag.length, 108, 'classic bag should still have 108 tiles');
   },
 };

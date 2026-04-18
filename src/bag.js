@@ -1,11 +1,16 @@
 export const SHAPES = ['circle', 'cross', 'diamond', 'square', 'star', 'clover'];
 export const COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
 
-/** Create and shuffle a full 108-tile bag. Returns a new array. */
-export function createBag() {
+export const KIDS_SHAPES = ['circle', 'square', 'star', 'diamond'];
+export const KIDS_COLORS = ['red', 'yellow', 'green', 'blue'];
+
+/** Create and shuffle a tile bag. Pass kidsMode=true for the 4×4×3 (48-tile) kids set. */
+export function createBag(kidsMode = false) {
+  const shapes = kidsMode ? KIDS_SHAPES : SHAPES;
+  const colors = kidsMode ? KIDS_COLORS : COLORS;
   const tiles = [];
-  for (const shape of SHAPES) {
-    for (const color of COLORS) {
+  for (const shape of shapes) {
+    for (const color of colors) {
       for (let i = 0; i < 3; i++) {
         tiles.push({ shape, color });
       }
