@@ -115,7 +115,7 @@ function render() {
   ctx.scale(camera.zoom, camera.zoom);
 
   const gridR = 20;
-  ctx.fillStyle = '#ffffff10';
+  ctx.fillStyle = game.kidsMode ? '#c8d4f066' : '#ffffff10';
   for (let gx = -gridR; gx <= gridR; gx++) {
     for (let gy = -gridR; gy <= gridR; gy++) {
       ctx.beginPath();
@@ -134,8 +134,8 @@ function render() {
   }
 
   if (selectedHandTile) {
-    ctx.strokeStyle = '#ffffff44';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = game.kidsMode ? '#ff6b3599' : '#ffffff44';
+    ctx.lineWidth = game.kidsMode ? 2 : 1;
     for (let gx = -gridR; gx <= gridR; gx++) {
       for (let gy = -gridR; gy <= gridR; gy++) {
         const occupied = getTile(game.board, gx, gy) !== null ||
