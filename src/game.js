@@ -5,9 +5,10 @@ import { scorePlacements } from './scoring.js';
 /**
  * Create a new game state.
  * playerNames: string[]  (2–6)
+ * kidsMode: boolean  (default false)
  */
-export function createGame(playerNames) {
-  const bag = createBag();
+export function createGame(playerNames, kidsMode = false) {
+  const bag = createBag(kidsMode);
   const players = playerNames.map(name => ({
     name,
     hand: drawTiles(bag, 6),
@@ -21,6 +22,7 @@ export function createGame(playerNames) {
     staged: [],
     consecutivePasses: 0,
     over: false,
+    kidsMode,
   };
 }
 

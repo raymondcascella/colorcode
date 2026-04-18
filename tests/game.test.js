@@ -72,4 +72,15 @@ export const tests = {
     for (let i = 0; i < names.length; i++) passTurn(game);
     assertEqual(game.over, true, 'game should be over after all players pass');
   },
+  'createGame in kids mode uses 48-tile bag': () => {
+    const game = createGame(['Alice', 'Bob'], true);
+    // 48 tiles - 6 dealt to Alice - 6 dealt to Bob = 36 remaining
+    assertEqual(game.bag.length, 36, 'kids bag should have 36 tiles after dealing');
+    assert(game.kidsMode === true, 'game.kidsMode should be true');
+  },
+  'createGame classic mode unaffected': () => {
+    const game = createGame(['Alice', 'Bob'], false);
+    assertEqual(game.bag.length, 96, 'classic bag should have 96 tiles after dealing');
+    assert(game.kidsMode === false, 'game.kidsMode should be false');
+  },
 };
