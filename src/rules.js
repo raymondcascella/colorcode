@@ -95,3 +95,29 @@ export function validatePlacement(board, placements) {
 
   return { valid: true };
 }
+
+/**
+ * Returns true if any tile in hand can be legally placed anywhere on the board.
+ * Checks only positions adjacent to existing tiles (or position 0,0 on empty board).
+ */
+export function hasAnyValidPlacement(board, hand) {
+  if (hand.length === 0) return false;
+  if (board.size === 0) return true;
+
+  const candidates = new Set();
+  for (const key of board.keys()) {
+    const [x, y] = key.split(',').map(Number);
+    for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+      const k = `${x+dx},${y+dy}`;
+      if (!board.has(k)) candidates.add(k);
+    }
+  }
+
+  for (const pos of candidates) {
+    const [x, y] = pos.split(',').map(Number);
+    for (const tile of hand) {
+      if (validatePlacement(board, [{ x, y, tile }]).valid) return true;
+    }
+  }
+  return false;
+}
