@@ -1,4 +1,4 @@
-const CACHE = 'colorcode-v1';
+const CACHE = 'colorcode-v2';
 
 const SHELL = [
   '/colorcode/',
@@ -12,6 +12,8 @@ const SHELL = [
   '/colorcode/manifest.json',
   '/colorcode/icons/icon-192.svg',
   '/colorcode/icons/icon-512.svg',
+  '/colorcode/icons/icon-192.png',
+  '/colorcode/icons/icon-512.png',
 ];
 
 self.addEventListener('install', e => {

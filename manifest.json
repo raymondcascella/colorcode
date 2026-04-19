@@ -2,12 +2,26 @@
   "name": "Color Code",
   "short_name": "Color Code",
   "description": "Local multiplayer tile placement game for 2–6 players.",
+  "id": "/colorcode/",
   "start_url": "/colorcode/",
   "scope": "/colorcode/",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#0e0e0e",
   "theme_color": "#e8ff47",
   "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "icons/icon-192.svg",
       "sizes": "192x192",
